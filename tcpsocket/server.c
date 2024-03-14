@@ -29,12 +29,8 @@ int main()
     // 2. 将socket()返回值和本地的IP端口绑定到一起
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(10000);   // 大端端口
-    // INADDR_ANY代表本机的所有IP, 假设有三个网卡就有三个IP地址
-    // 这个宏可以代表任意一个IP地址
-    // 这个宏一般用于本地的绑定操作
+    addr.sin_port = htons(10000);   
     addr.sin_addr.s_addr = INADDR_ANY;  // 这个宏的值为0 == 0.0.0.0
-//    inet_pton(AF_INET, "192.168.237.131", &addr.sin_addr.s_addr);
     int ret = bind(lfd, (struct sockaddr*)&addr, sizeof(addr));
     if(ret == -1)
     {
