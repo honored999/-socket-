@@ -16,7 +16,7 @@ int main()
     }
 
  
-struct sockaddr_in seraddr;
+    struct sockaddr_in seraddr;
     seraddr.sin_family = AF_INET;
     seraddr.sin_port = htons(10000);    // 大端
     inet_pton(AF_INET, "192.168.42.129", &seraddr.sin_addr.s_addr);
