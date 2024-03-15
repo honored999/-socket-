@@ -5,6 +5,12 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+typedef struct location
+{
+   char time[20];
+   char location[20];
+   char name[3];
+}Loca;
 int main()
 {
     // 1. 创建通信的套接字
@@ -27,22 +33,24 @@ int main()
         perror("connect");
         exit(0);
     }
-
+    Loca data;
+    memcpy(data.time, "10", sizeof("10"));
+    memcpy(data.location, "100.36, 66.7", sizeof("100.36, 66.7"));
+    memcpy(data.name, "1", sizeof("1"));
+    char recvbuffer[1024] = {0};
+    Loca recvdata;
     // 3. 和服务器端通信
     int number = 0;
     while(1)
     {
         // 发送数据
-        char buf[1024];
-        sprintf(buf, "你好, 服务器...%d\n", number++);
-        write(fd, buf, strlen(buf)+1);
-        
+        send ( fd, (char*)&data,sizeof(Loca), 0 );
         // 接收数据
-        memset(buf, 0, sizeof(buf));
-        int len = read(fd, buf, sizeof(buf));
+        int len = recv(fd, recvbuffer, sizeof(recvbuffer), 0);
         if(len > 0)
         {
-            printf("服务器say: %s\n", buf);
+            memcpy(&recvdata, recvbuffer, sizeof(Loca));
+            printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
         }
         else if(len  == 0)
         {
