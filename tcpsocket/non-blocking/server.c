@@ -27,7 +27,7 @@ void setnonblock(int lfd)
 	perror( "F_GETFL failed");
 	exit(1);
     }
-    if( fcntl( lfd, E_SETFL, flags | O_NONBLOCK) < 0 )
+    if( fcntl( lfd, F_SETFL, flags | O_NONBLOCK) < 0 )
     {
 	perror( "F_SETFL failed");
 	exit(1);
@@ -97,15 +97,14 @@ int main()
     int cfd;
     struct sockaddr_in cliaddr;
     int clilen = sizeof(struct sockaddr_in);
-    int ret=0;
+    ret=0;
     char ip[24] = {0};
-    char buf [1024];
 
     while(1)
     {
 	readfds=readfds_bak;
 	maxfd = updatemaxfd( readfds, maxfd);
-	timeout.tv_sec = 5;
+	timeout.tv_sec = 10;
 	timeout.tv_usec = 0;
 
 	//select函数设置
@@ -117,7 +116,7 @@ int main()
  	}
 	else if( ret == 0)
 	{
-	   printf("在%d秒内套接字接受信息", timeout.tv_sec);
+	   printf("在%ld秒内无套接字接受信息", timeout.tv_sec);
 	   continue;
 	}
 
@@ -135,53 +134,47 @@ int main()
 		   perror("accept failed\n"); 
 	    	   exit(1);
     		}
-		if(!inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),ntohs(cliaddr.sin_port))    
+		/*if(!inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),ntohs(cliaddr.sin_port))    
 		{
 	       	   perror("inet_ntop failed\n");
 	    	   exit(1);
-		}
+		}*/
         	printf("客户端的IP地址: %s, 端口: %d\n",inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),ntohs(cliaddr.sin_port));
 		setnonblock(cfd);
 		if( cfd > maxfd )
 		{
 		   maxfd = cfd;
 		}
-		FD_SET(maxfd,&readfds_bak);
+		FD_SET(cfd,&readfds_bak);
+	   }
+	   else
+	   {
+		 // 接收数据
+        	char buf[1024];
+        	memset(buf, 0, sizeof(buf));
+        	int len = recv(i, buf, sizeof(buf), 0);
+        	Loca recvdata;
+        	memcpy(&recvdata, buf, sizeof(Loca));
+        	if(len == -1)
+        	{
+            	   perror("recv failed\n");
+		   exit(1);
+              	}
+		printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
+        	if(send(i, buf, len, 0)== -1)
+        	{
+            	   perror("send failed\n");
+            	   exit(1);
+        	}
+        	/*if(close(i) == -1) 
+	       	{
+            	   perror("close failed");
+            	   exit(1);       	
+		}	
+		FD_CLR( i, &readfds_bak);*/
 	   }
 
-    // 5. 和客户端通信
-   while(1)
-   {
-        // 接收数据
-        char buf[1024];
-        memset(buf, 0, sizeof(buf));
-        int len = recv(cfd, buf, sizeof(buf), 0);
-        Loca recvdata;
-        memcpy(&recvdata, buf, sizeof(Loca));
-        if(len > 0)
-        {
-            printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
-            send(cfd, buf, len, 0);
-        }
-        else if(len  == 0)
-        {
-            printf("客户端断开了连接...\n");
-            break;
-        }
-        else
-        {
-            perror("read");
-            break;
-        }
-    }
-    
-
-    close(cfd);
-    cfd = -1;
-
-    }
-
-    close(lfd);
+   
         }
    }
     return 0;

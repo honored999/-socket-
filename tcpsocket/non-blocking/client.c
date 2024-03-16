@@ -52,7 +52,7 @@ int main()
             memcpy(&recvdata, recvbuffer, sizeof(Loca));
             printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
         }
-        else if(len  == 0)
+        /*else if(len  == 0)
         {
             printf("服务器断开了连接...\n");
             break;
@@ -61,7 +61,7 @@ int main()
         {
             perror("read");
             break;
-        }
+        }*/
         sleep(1);   // 每隔1s发送一条数据
     }
 
