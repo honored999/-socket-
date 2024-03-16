@@ -22,6 +22,7 @@ struct sockinfo infos[512];
 
 void* working(void* arg);
 
+Loca hanshu(Loca recvdata);
 int main()
 {
     // 1. 创建监听的套接字
@@ -109,6 +110,7 @@ void* working(void* arg)
         int len = recv(pinfo->lfd, buf, sizeof(buf), 0);
         Loca recvdata;
         memcpy(&recvdata, buf, sizeof(Loca));
+	changdata=hanshu(recvdata);
         if(len > 0)
         {
             printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
