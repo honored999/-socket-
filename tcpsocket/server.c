@@ -5,13 +5,9 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include "algorithm.h"
 
-typedef struct location
-{
-   char time[20];
-   char location[20];
-   char name[3];
-}Loca;
+
 struct sockinfo
 {
    struct sockaddr_in addr;
@@ -110,11 +106,11 @@ void* working(void* arg)
         int len = recv(pinfo->lfd, buf, sizeof(buf), 0);
         Loca recvdata;
         memcpy(&recvdata, buf, sizeof(Loca));
-	changdata=hanshu(recvdata);
+	Loca changedata=hanshu(recvdata);
         if(len > 0)
         {
             printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
-            send(pinfo->lfd, buf, len, 0);
+            send(pinfo->lfd, (char*)&changedata, len, 0);
         }
         else if(len  == 0)
         {
