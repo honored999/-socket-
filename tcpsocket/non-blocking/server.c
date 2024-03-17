@@ -158,15 +158,29 @@ int main()
         	if(len == -1)
         	{
             	   perror("recv failed\n");
-		   exit(1);
-              	}
-		printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
-        	if(send(i, buf, len, 0)== -1)
+		   exit(1);             	
+		}	
+		/*printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
+		send(i, buf, len, 0);*/
+        	/*if(send(i, buf, len, 0)== -1)
         	{
             	   perror("send failed\n");
-            	   exit(1);
-        	}
-        	/*if(close(i) == -1) 
+            	   close(i);
+		   FD_CLR( i, &readfds_bak);
+		   printf("客户端%d中断连接", i);
+        	}*/	
+		if(len <= 0)
+		{
+		   close(i);
+		   FD_CLR( i, &readfds_bak);
+		   printf("客户端%d中断连接", i);
+		}        	
+		if(FD_ISSET( i, &readfds_bak))
+		{
+		  printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
+	  	  send(i, buf, len, 0);
+		}
+		/*if(close(i) == -1) 
 	       	{
             	   perror("close failed");
             	   exit(1);       	
