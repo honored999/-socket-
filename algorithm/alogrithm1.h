@@ -1,8 +1,13 @@
 #pragma once
 #include <stdio.h>
 
-struct location;
-struct location hanshu(struct location receivedata)
+typedef struct location
+{
+   char time[20];
+   char location[20];
+   char name[3];
+}Loca;
+Loca hanshu(Loca receivedata)
 {
 	return receivedata;
 }
