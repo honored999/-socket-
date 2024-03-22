@@ -34,6 +34,11 @@ typedef struct list
   IpInfo* iplist;
 }List;
 
+IpInfo iplist;//创建全局变量
+
+Loca** lolist = (Loca**)malloc(1 * sizeof(Loca*)); 
+Loca* lolist[0] = (Loca* )malloc(1 * sizeof(Loca));//创建全局变量
+
 IpInfo connect_msg(char *ip, int port, IpInfo* iplist);//更新客户端列表
 
 void send_msg(IpInfo *ip, Loca* data);//向客户端发送数据
@@ -103,6 +108,7 @@ int updatemaxfd(fd_set fds, int maxfd)
 
 void* working(void* arg)
 {
+    
     // 1. 创建监听的套接字
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
     if(lfd == -1)
@@ -200,20 +206,20 @@ void* working(void* arg)
 		  continue;
     		}
         	printf("客户端的IP地址: %s, 端口: %d\n",inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),ntohs(cliaddr.sin_port));
-		arg->iplist[n].id=n;
-		arg->iplist[n].maxid=0;
-		arg->iplist[n].fd=cfd;
-		arg->iplist[n].nid=0;
-		arg->iplist[n].real=1;
-		arg->iplist[n].port=ntohs(cliaddr.sin_port);
-		memcpy(arg->iplist[n].ip,inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),sizeof(inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip))));
+		iplist[n].id=n;
+		iplist[n].maxid=0;
+		iplist[n].fd=cfd;
+		iplist[n].nid=0;
+		iplist[n].real=1;
+		iplist[n].port=ntohs(cliaddr.sin_port);
+		memcpy(iplist[n].ip,inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),sizeof(inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip))));
 		++n;
 		if(n!=0)
 		{
-		  arg->lolist=(Loca**)realloc(arg->lolist, (n+1)*sizeof(Loca*));
-		  arg->lolist[n-1]= (Loca*)malloc(1*sizeof(Loca));
+		  lolist=(Loca**)realloc(lolist, (n+1)*sizeof(Loca*));
+		  lolist[n-1]= (Loca*)malloc(1*sizeof(Loca));
 		}
-		arg->iplist=(IpInfo*)realloc(arg->iplist,(n+1)*sizeof(IpInfo));
+		iplist=(IpInfo*)realloc(iplist,(n+1)*sizeof(IpInfo));
 		setnonblock(cfd);
 		if( cfd > maxfd )
 		{
@@ -223,9 +229,9 @@ void* working(void* arg)
 	   }
 	   else
 	   {
-		 for(num=0 ; num <= sizeof(arg->iplist)/sizeof(arg->iplist[0]); ++num)
+		 for(num=0 ; num <= sizeof(iplist)/sizeof(iplist[0]); ++num)
 		{
-		  if(i == arg->iplist[num].fd && arg->iplist[num].real != 0)
+		  if(i == iplist[num].fd && iplist[num].real != 0)
 		  {
 			break;
 		  }
@@ -236,12 +242,12 @@ void* working(void* arg)
         	int len = recv(i, buf, sizeof(buf), 0);
         	Loca recvdata;
         	memcpy(&recvdata, buf, sizeof(Loca));
-		arg->lolist[arg->iplist[num].id][arg->iplist[num].nid]=recvdata;
-		++(arg->iplist[num].nid);
-		if(arg->iplist[num].nid>arg->iplist[num].maxid)
+		lolist[iplist[num].id][iplist[num].nid]=recvdata;
+		++(iplist[num].nid);
+		if(iplist[num].nid>iplist[num].maxid)
 		{
-		  arg->lolist[arg->iplist[num].id]=(Loca*)realloc(arg->lolist[arg->iplist[num].id], (arg->iplist[num].nid+1)*sizeof(Loca));
-		  ++(arg->iplist[num].maxid);
+		  lolist[iplist[num].id]=(Loca*)realloc(lolist[iplist[num].id], (iplist[num].nid+1)*sizeof(Loca));
+		  ++(iplist[num].maxid);
 		}
 		
         	if(len == -1)
@@ -262,7 +268,7 @@ void* working(void* arg)
 		{
 		   close(i);
 		   FD_CLR( i, &readfds_bak);
-		   arg->iplist[num].real=0;
+		   iplist[num].real=0;
 		   printf("客户端%d中断连接", i);
 		}        	
 		/*if(FD_ISSET( i, &readfds_bak))
