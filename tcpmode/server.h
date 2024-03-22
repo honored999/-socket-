@@ -26,6 +26,8 @@ typedef struct ipinfo
    int maxid;
    int nid;
    int real;
+   int send;
+   Loca sendmsg;
 }IpInfo;
 
 typedef struct list
@@ -37,13 +39,13 @@ typedef struct list
 IpInfo iplist;//创建全局变量
 
 Loca** lolist = (Loca**)malloc(1 * sizeof(Loca*)); 
-Loca* lolist[0] = (Loca* )malloc(1 * sizeof(Loca));//创建全局变量
+lolist[0] = (Loca* )malloc(1 * sizeof(Loca));//创建全局变量
 
-IpInfo connect_msg(char *ip, int port, IpInfo* iplist);//更新客户端列表
+IpInfo* connect_msg(char *ip, int port);//更新客户端列表
 
 void send_msg(IpInfo *ip, Loca* data);//向客户端发送数据
 
-Loca recv_msg(IpInfo* ip, Loca** lolist);//获取指定客户端的最新数据
+Loca recv_msg(IpInfo* ip);//获取指定客户端的最新数据
 
 /*void run_msg();*/
 
@@ -63,7 +65,7 @@ int updatemaxfd(fd_set fds, int maxfd);
 Loca** create_lolist()
 {
   Loca** arr = (Loca**)malloc(1 * sizeof(Loca*)); 
-  Loca* arr[0] = (Loca* )malloc(1 * sizeof(Loca));
+  arr[0] = (Loca* )malloc(1 * sizeof(Loca));
   return arr;
 }
 
@@ -211,6 +213,7 @@ void* working(void* arg)
 		iplist[n].fd=cfd;
 		iplist[n].nid=0;
 		iplist[n].real=1;
+		iplist[n].send=0;
 		iplist[n].port=ntohs(cliaddr.sin_port);
 		memcpy(iplist[n].ip,inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),sizeof(inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip))));
 		++n;
@@ -257,6 +260,10 @@ void* working(void* arg)
 		}	
 		/*printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
 		send(i, buf, len, 0);*/
+		if(iplist[num].send==1 && iplist[num].real==1)
+		{
+			send(iplist[num].fd, (char*)iplist[num].sendmsg, sizeof(Loca), 0);
+		}
         	/*if(send(i, buf, len, 0)== -1)
         	{
             	   perror("send failed\n");
@@ -289,30 +296,31 @@ void* working(void* arg)
    }
 }
 
-IpInfo connect_msg(char *ip, int port, IpInfo* iplist)
+IpInfo* connect_msg(char *ip, int port)
 {
   for(int i= 0; i < sizeof(iplist)/sizeof(iplise[0]); ++i)
   {
-	if(strcmp( ip, iplist[i]->ip) ==0 && iplist[i]->real == 1 && iplist[i]->port == port)
+	if(strcmp( ip, iplist[i].ip) ==0 && iplist[i].real == 1 && iplist[i].port == port)
 	{
-	   return iplist[i];
+	   return &(iplist[i]);
 	}	
   }
   return NULL;
 }
 
-Loca recv_msg(IpInfo* ip, Loca** lolist)
+Loca recv_msg(IpInfo* ip)
 {
-  int i = ip->nid;
+  /*int i = ip->nid;*/
   --(ip->nid);
-  return(lolist[ip->id][i]); 
+  return(lolist[ip->id][ip->nid]); 
 }
 
 void send_msg(IpInfo *ip, Loca* data)
 {
   if(ip->real == 1)
   {
-	send(ip->fd, (char*)data, sizeof(Loca), 0);
+	ip->send = 1;
+	ip->sendmsg = *data;
   }
   else
   {
