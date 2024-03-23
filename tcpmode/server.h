@@ -36,10 +36,9 @@ typedef struct list
   IpInfo* iplist;
 }List;
 
-IpInfo iplist;//创建全局变量
+IpInfo* iplist ;//创建全局变量
 
-Loca** lolist = (Loca**)malloc(1 * sizeof(Loca*)); 
-lolist[0] = (Loca* )malloc(1 * sizeof(Loca));//创建全局变量
+Loca** lolist ;//创建全局变量
 
 IpInfo* connect_msg(char *ip, int port);//更新客户端列表
 
@@ -55,7 +54,7 @@ Loca** create_lolist();
 
 IpInfo* create_iplist();
 
-void create_list(Loca** lolist, IpInfo* iplist);
+//void create_list(Loca** lolist, IpInfo* iplist);
 
 void setnonblock(int lfd);
 
@@ -163,6 +162,7 @@ void* working(void* arg)
     ret=0;
     char ip[24] = {0};
     int n = 0;
+    int num;
 
     while(1)
     {
@@ -262,8 +262,8 @@ void* working(void* arg)
 		send(i, buf, len, 0);*/
 		if(iplist[num].send==1 && iplist[num].real==1)
 		{
-			send(iplist[num].fd, (char*)iplist[num].sendmsg, sizeof(Loca), 0);
-			iplist[num].send = 0；
+			send(iplist[num].fd, (char*)&(iplist[num].sendmsg), sizeof(Loca), 0);
+			iplist[num].send = 0;
 		}
         	/*if(send(i, buf, len, 0)== -1)
         	{
@@ -299,7 +299,7 @@ void* working(void* arg)
 
 IpInfo* connect_msg(char *ip, int port)
 {
-  for(int i= 0; i < sizeof(iplist)/sizeof(iplise[0]); ++i)
+  for(int i= 0; i < sizeof(iplist)/sizeof(iplist[0]); ++i)
   {
 	if(strcmp( ip, iplist[i].ip) ==0 && iplist[i].real == 1 && iplist[i].port == port)
 	{
@@ -326,7 +326,7 @@ void send_msg(IpInfo *ip, Loca* data)
   if(ip->real == 1)
   {
 	ip->send = 1;
-	ip->sendmsg = *data;
+	memcpy(&(ip->sendmsg), data, sizeof(Loca));
   }
   else
   {
