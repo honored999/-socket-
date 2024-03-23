@@ -263,6 +263,7 @@ void* working(void* arg)
 		if(iplist[num].send==1 && iplist[num].real==1)
 		{
 			send(iplist[num].fd, (char*)iplist[num].sendmsg, sizeof(Loca), 0);
+			iplist[num].send = 0；
 		}
         	/*if(send(i, buf, len, 0)== -1)
         	{
@@ -311,8 +312,13 @@ IpInfo* connect_msg(char *ip, int port)
 Loca recv_msg(IpInfo* ip)
 {
   /*int i = ip->nid;*/
-  --(ip->nid);
-  return(lolist[ip->id][ip->nid]); 
+  if(ip->nid >=1)
+  {
+  	--(ip->nid);
+  	return(lolist[ip->id][ip->nid]); 
+  }
+  else
+  	exit(1);
 }
 
 void send_msg(IpInfo *ip, Loca* data)
