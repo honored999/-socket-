@@ -320,7 +320,7 @@ Loca recv_msg(IpInfo* ip)
   	return(lolist[ip->id][ip->nid]); 
   }
   else
-  	exit(1);
+  	return false_msg;
 }
 
 void send_msg(IpInfo *ip, Loca* data)
