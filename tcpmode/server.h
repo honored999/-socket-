@@ -40,6 +40,8 @@ IpInfo* iplist ;//创建全局变量
 
 Loca** lolist ;//创建全局变量
 
+Loca false_msg;
+
 IpInfo* connect_msg(char *ip, int port);//更新客户端列表
 
 void send_msg(IpInfo *ip, Loca* data);//向客户端发送数据
@@ -234,7 +236,7 @@ void* working(void* arg)
 	   {
 		 for(num=0 ; num <= sizeof(iplist)/sizeof(iplist[0]); ++num)
 		{
-		  if(i == iplist[num].fd && iplist[num].real != 0)
+		  if(n == iplist[num].fd && iplist[num].real != 0)
 		  {
 			break;
 		  }
