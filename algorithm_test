@@ -1,0 +1,94 @@
+#include<stdio.h>
+#include <sys/time.h>/*包含：获取当前时间gettimeofday、定时器setitimer*/
+#include<signal.h>
+#include"server.h"
+
+typedef struct Loca;
+
+typedef struct
+{
+	Loca data;
+	int AoI;
+	int label=1;/*标记是否已被发送*/
+}Loca_d;
+
+static struct itimerval oldtv;/*无意义*/
+
+void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i);/*声明算法*/
+
+void set_timer()
+{
+	struct itimerval itv;
+	itv.it_interval.tv_sec = 0;
+	itv.it_interval.tv_usec = 100;/*100us后计时器运行*/
+	itv.it_value.tv_sec = 0;
+	itv.it_value.tv_usec = 100;/*计时器每隔100us发出一次信号*/
+	setitimer(ITIMER_REAL, &itv, &oldtv);
+}
+
+
+int main()
+{
+	Loca shuju[10000];
+	Loca sd_msg[10000];
+	Loca_d shuju_d[10000];
+	int i = 0;
+	IpInfo* msg = connect_msg(ip,port);/*创立连接*/
+    signal(SIGALRM, algorithm(shuju,sd_msg,shuju_d,i));/*定时器每发出一次信号，运行一次algorithm*/
+	set_timer();
+	return 0;
+}
+
+void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
+{
+	struct timeval timein;
+	Loca mid,test;
+	int j, k, m = 0;
+	test = recv_msg(msg);/*测试是否为空数据*/
+	if (test.name != '-1')
+	{
+		gettimeofday(&timein, NULL);/*获取当前时间*/
+		shuju[i] = test;
+		shuju_d[i].data = shuju[j];
+		shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
+		i++;
+		if (i > 2)
+		{
+			for (j = 0; j < 100; j++)
+			{
+				for (k = j + 1; k < 100; k++)
+				{
+					if (shuju_d[k].AoI < shuju_d[j].AoI)
+					{
+						mid = shuju_d[j].data;
+						shuju_d[j].data = shuju_d[k];
+						shuju_d[k].data = mid;
+					}
+				}
+			}
+			for (m = 0; m < i; m++)
+			{
+				if (shuju_d[m].label = 1)
+				{
+					sd_msg[m] = shuju_d[m].data;
+					send_msg(ip, sd_msg[m].data);
+					shuju_d[m].label = 0;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		for (m = 0; m < i; m++)
+		{
+			if (shuju_d[m].label = 1)
+			{
+				sd_msg[m] = shuju_d[m].data;
+				send_msg(ip, sd_msg[m].data);
+				shuju_d[m].label = 0;
+				break;
+			}
+		}
+	}
+}
