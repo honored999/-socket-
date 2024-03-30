@@ -8,6 +8,7 @@ int main()
 	memcpy(false_msg.time, "-1", sizeof("10"));
     	memcpy(false_msg.location, "-1, -1", sizeof("100.36, 66.7"));
     	memcpy(false_msg.name, "-1", sizeof("1"));
+	pthread_rwlock_init(&rwlock, NULL);
 	pthread_t tid;
 	pthread_create(&tid, NULL, working, NULL); 
 	pthread_detach(tid);

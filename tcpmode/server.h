@@ -42,6 +42,8 @@ Loca** lolist ;//创建全局变量
 
 Loca false_msg;
 
+pthread_rwlock_t rwlock;//创建读写锁
+
 IpInfo* connect_msg(char *ip, int port);//更新客户端列表
 
 void send_msg(IpInfo *ip, Loca* data);//向客户端发送数据
@@ -210,6 +212,7 @@ void* working(void* arg)
 		  continue;
     		}
         	printf("客户端的IP地址: %s, 端口: %d\n",inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),ntohs(cliaddr.sin_port));
+		pthread_rwlock_wrlock(&rwlock);//写锁
 		iplist[n].id=n;
 		iplist[n].maxid=0;
 		iplist[n].fd=cfd;
@@ -225,6 +228,7 @@ void* working(void* arg)
 		  lolist[n-1]= (Loca*)malloc(1*sizeof(Loca));
 		}
 		iplist=(IpInfo*)realloc(iplist,(n+1)*sizeof(IpInfo));
+		pthread_rwlock_unlock(&rwlock);//关写锁
 		setnonblock(cfd);
 		if( cfd > maxfd )
 		{
@@ -234,19 +238,22 @@ void* working(void* arg)
 	   }
 	   else
 	   {
-		 for(num=0 ; num <= sizeof(iplist)/sizeof(iplist[0]); ++num)
+		pthread_rwlock_rdlock(&rwlock);
+		for(num=0 ; num <= sizeof(iplist)/sizeof(iplist[0]); ++num)
 		{
 		  if(n == iplist[num].fd && iplist[num].real != 0)
 		  {
 			break;
 		  }
 		}
+		pthread_rwlock_unlock(&rwlock);
 		// 接收数据
         	char buf[1024];
         	memset(buf, 0, sizeof(buf));
         	int len = recv(i, buf, sizeof(buf), 0);
         	Loca recvdata;
         	memcpy(&recvdata, buf, sizeof(Loca));
+		pthread_rwlock_wrlock(&rwlock);
 		lolist[iplist[num].id][iplist[num].nid]=recvdata;
 		++(iplist[num].nid);
 		if(iplist[num].nid>iplist[num].maxid)
@@ -254,6 +261,7 @@ void* working(void* arg)
 		  lolist[iplist[num].id]=(Loca*)realloc(lolist[iplist[num].id], (iplist[num].nid+1)*sizeof(Loca));
 		  ++(iplist[num].maxid);
 		}
+		pthread_rwlock_unlock(&rwlock);
 		
         	if(len == -1)
         	{
@@ -262,11 +270,13 @@ void* working(void* arg)
 		}	
 		/*printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
 		send(i, buf, len, 0);*/
+		pthread_rwlock_wrlock(&rwlock);
 		if(iplist[num].send==1 && iplist[num].real==1)
 		{
 			send(iplist[num].fd, (char*)&(iplist[num].sendmsg), sizeof(Loca), 0);
 			iplist[num].send = 0;
 		}
+		pthread_rwlock_unlock(&rwlock);
         	/*if(send(i, buf, len, 0)== -1)
         	{
             	   perror("send failed\n");
@@ -274,13 +284,15 @@ void* working(void* arg)
 		   FD_CLR( i, &readfds_bak);
 		   printf("客户端%d中断连接", i);
         	}*/	
+		pthread_rwlock_wrlock(&rwlock);
 		if(len <= 0)
 		{
 		   close(i);
 		   FD_CLR( i, &readfds_bak);
 		   iplist[num].real=0;
 		   printf("客户端%d中断连接", i);
-		}        	
+		}   
+		pthread_rwlock_unlock(&rwlock);     	
 		/*if(FD_ISSET( i, &readfds_bak))
 		{
 		  printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
@@ -301,30 +313,40 @@ void* working(void* arg)
 
 IpInfo* connect_msg(char *ip, int port)
 {
+  pthread_rwlock_rdlock(&rwlock);
   for(int i= 0; i < sizeof(iplist)/sizeof(iplist[0]); ++i)
   {
 	if(strcmp( ip, iplist[i].ip) ==0 && iplist[i].real == 1 && iplist[i].port == port)
 	{
+	   pthread_rwlock_unlock(&rwlock);
 	   return &(iplist[i]);
 	}	
   }
+  pthread_rwlock_unlock(&rwlock);
   return NULL;
 }
 
 Loca recv_msg(IpInfo* ip)
 {
   /*int i = ip->nid;*/
+  pthread_rwlock_wrlock(&rwlock);
   if(ip->nid >=1)
   {
   	--(ip->nid);
-  	return(lolist[ip->id][ip->nid]); 
+  	Loca data = lolist[ip->id][ip->nid];
+  	pthread_rwlock_unlock(&rwlock);
+  	return data; 
   }
   else
+  {	
+  	pthread_rwlock_unlock(&rwlock);
   	return false_msg;
+  }	
 }
 
 void send_msg(IpInfo *ip, Loca* data)
 {
+  pthread_rwlock_wrlock(&rwlock);
   if(ip->real == 1)
   {
 	ip->send = 1;
@@ -334,4 +356,6 @@ void send_msg(IpInfo *ip, Loca* data)
   {
 	printf("客户端已断开");
   }
+  pthread_rwlock_unlock(&rwlock);
+  return;
 }
