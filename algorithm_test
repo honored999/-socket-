@@ -20,9 +20,9 @@ void set_timer()
 {
 	struct itimerval itv;
 	itv.it_interval.tv_sec = 0;
-	itv.it_interval.tv_usec = 100;/*100us后计时器运行*/
+	itv.it_interval.tv_usec = 100000;/*100us后计时器运行*/
 	itv.it_value.tv_sec = 0;
-	itv.it_value.tv_usec = 100;/*计时器每隔100us发出一次信号*/
+	itv.it_value.tv_usec = 100000;/*计时器每隔100us发出一次信号*/
 	setitimer(ITIMER_REAL, &itv, &oldtv);
 }
 
@@ -44,51 +44,43 @@ void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 	struct timeval timein;
 	Loca mid,test;
 	int j, k, m = 0;
-	test = recv_msg(msg);/*测试是否为空数据*/
-	if (test.name != '-1')
+	while (1) /*接收数据直至为空*/
 	{
-		gettimeofday(&timein, NULL);/*获取当前时间*/
-		shuju[i] = test;
+		shuju[i] = recv_msg(msg);
 		shuju_d[i].data = shuju[j];
 		shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
-		i++;
-		if (i > 2)
+		if (shuju[i].name != '-1')
 		{
-			for (j = 0; j < 100; j++)
+			i++;
+			shuju[i] = recv_msg(msg);
+			shuju_d[i].data = shuju[j];
+			shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
+		}
+		else
+			break;
+	}
+
+	for (j = 0; j < i; j++) /*排序*/
+	{
+		for (k = j + 1; k < i; k++)
+		{
+			if (shuju_d[k].AoI < shuju_d[j].AoI)
 			{
-				for (k = j + 1; k < 100; k++)
-				{
-					if (shuju_d[k].AoI < shuju_d[j].AoI)
-					{
-						mid = shuju_d[j].data;
-						shuju_d[j].data = shuju_d[k];
-						shuju_d[k].data = mid;
-					}
-				}
-			}
-			for (m = 0; m < i; m++)
-			{
-				if (shuju_d[m].label = 1)
-				{
-					sd_msg[m] = shuju_d[m].data;
-					send_msg(ip, sd_msg[m].data);
-					shuju_d[m].label = 0;
-					break;
-				}
+				mid = shuju_d[j].data;
+				shuju_d[j].data = shuju_d[k];
+				shuju_d[k].data = mid;
 			}
 		}
 	}
-	else
+
+	for (m = 0; m < i; m++)/*发送*/
 	{
-		for (m = 0; m < i; m++)
+		if (shuju_d[m].label = 1)
 		{
-			if (shuju_d[m].label = 1)
-			{
-				sd_msg[m] = shuju_d[m].data;
-				send_msg(ip, sd_msg[m].data);
-				shuju_d[m].label = 0;
-				break;
-			}
+			sd_msg[m] = shuju_d[m].data;
+			send_msg(ip, sd_msg[m]);
+			shuju_d[m].label = 0;
+			break;
 		}
 	}
 }
