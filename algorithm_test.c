@@ -4,6 +4,7 @@
 #include"server.h"
 
 typedef struct Loca;
+typedef void (*sighandler_t)(int);
 
 typedef struct
 {
