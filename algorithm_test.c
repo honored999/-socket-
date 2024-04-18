@@ -4,13 +4,13 @@
 #include"server.h"
 
 typedef struct Loca;
-typedef void (*sighandler_t)(int);
+
 
 typedef struct
 {
 	Loca data;
 	int AoI;
-	int label=1;/*标记是否已被发送*/
+	int label;/*标记是否已被发送*/
 }Loca_d;
 
 static struct itimerval oldtv;/*无意义*/
@@ -40,7 +40,7 @@ int main()
 	return 0;
 }
 
-void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
+sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 {
 	struct timeval timein;
 	Loca mid,test;
@@ -50,12 +50,14 @@ void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 		shuju[i] = recv_msg(msg);
 		shuju_d[i].data = shuju[j];
 		shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
+		shuju_d[i].label=1;
 		if (shuju[i].name != '-1')
 		{
 			i++;
 			shuju[i] = recv_msg(msg);
 			shuju_d[i].data = shuju[j];
 			shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
+			shuju_d[i].label=1;
 		}
 		else
 			break;
@@ -68,7 +70,7 @@ void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 			if (shuju_d[k].AoI < shuju_d[j].AoI)
 			{
 				mid = shuju_d[j].data;
-				shuju_d[j].data = shuju_d[k];
+				shuju_d[j].data = shuju_d[k].data;
 				shuju_d[k].data = mid;
 			}
 		}
