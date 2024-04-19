@@ -10,7 +10,7 @@ typedef void (*sighandler_t)(int);
 typedef struct
 {
 	Loca data;
-	int AoI;
+	long int AoI;
 	int label;/*标记是否已被发送*/
 }Loca_d;
 
