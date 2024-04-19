@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include <sys/time.h>/*包含：获取当前时间gettimeofday、定时器setitimer*/
 #include<signal.h>
+#include<stdlib.h>
 #include"server.h"
 
 
@@ -47,16 +48,18 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 	int j, k, m = 0;
 	while (1) /*接收数据直至为空*/
 	{
+		gettimeofday(&timein, NULL);
 		shuju[i] = recv_msg(msg);
 		shuju_d[i].data = shuju[j];
-		shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
+		shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
 		shuju_d[i].label=1;
 		if (strcmp(shuju[i].name,-1) != 0)
 		{
 			i++;
+			gettimeofday(&timein, NULL);
 			shuju[i] = recv_msg(msg);
 			shuju_d[i].data = shuju[j];
-			shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
+			shuju_d[i].AoI = timein.tv_usec - atol(ashuju[i].time);
 			shuju_d[i].label=1;
 		}
 		else
