@@ -53,7 +53,7 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 		shuju_d[i].data = shuju[j];
 		shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
 		shuju_d[i].label=1;
-		if (strcmp(shuju[i].name,'-1') != 0)
+		if (strcmp(shuju[i].name,"-1") != 0)
 		{
 			i++;
 			gettimeofday(&timein, NULL);
