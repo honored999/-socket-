@@ -134,6 +134,10 @@ int main()
 		   perror("accept failed\n"); 
 	    	   exit(1);
     		}
+		if(cfd == -1&& errno ==EAGAIN)
+    		{
+		   continue;
+    		}
 		/*if(!inet_ntop(AF_INET, &cliaddr.sin_addr.s_addr, ip, sizeof(ip)),ntohs(cliaddr.sin_port))    
 		{
 	       	   perror("inet_ntop failed\n");

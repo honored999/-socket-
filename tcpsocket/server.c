@@ -5,7 +5,6 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include "algorithm.h"
 
 
 struct sockinfo
@@ -33,7 +32,7 @@ int main()
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(10000);   
-    addr.sin_addr.s_addr = INADDR_ANY;  // 这个宏的值为0 == 0.0.0.0
+    addr.sin_addr.s_addr = 192.168.42.129;  // 这个宏的值为0 == 0.0.0.0
     int ret = bind(lfd, (struct sockaddr*)&addr, sizeof(addr));
     if(ret == -1)
     {

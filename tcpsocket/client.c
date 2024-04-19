@@ -39,6 +39,7 @@ int main()
     memcpy(data.name, "1", sizeof("1"));
     char recvbuffer[1024] = {0};
     Loca recvdata;
+    int time;
     // 3. 和服务器端通信
     int number = 0;
     while(1)
@@ -62,6 +63,8 @@ int main()
             perror("read");
             break;
         }
+        sscanf(data.time, "%d", &time);
+        sprintf(data.time, "%d", ++time);
         sleep(1);   // 每隔1s发送一条数据
     }
 
