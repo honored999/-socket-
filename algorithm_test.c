@@ -45,7 +45,7 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* 
 {
 	sigset_t sigset;
 	sigemptyset(&sigset);
-	sigaddset(&sigset,SIGALARM);
+	sigaddset(&sigset,SIGALRM);
 	sigprocmask(SIG_BLOCK,&sigset,NULL);/*信号屏蔽*/
 	
 	struct timeval timein;
@@ -97,6 +97,6 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* 
 	
 	sigset_t sigset;
 	sigemptyset(&sigset);
-	sigaddset(&sigset,SIGALARM);
+	sigaddset(&sigset,SIGALRM);
 	sigprocmask(SIG_UNBLOCK,&sigset,NULL);/*信号解除屏蔽*/
 }
