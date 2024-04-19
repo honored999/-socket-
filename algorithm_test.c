@@ -3,8 +3,8 @@
 #include<signal.h>
 #include"server.h"
 
-typedef struct Loca;
 
+typedef void (*sighandler_t)(int);
 
 typedef struct
 {
@@ -15,7 +15,7 @@ typedef struct
 
 static struct itimerval oldtv;/*无意义*/
 
-void algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i);/*声明算法*/
+sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i);/*声明算法*/
 
 void set_timer()
 {
@@ -51,7 +51,7 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
 		shuju_d[i].data = shuju[j];
 		shuju_d[i].AoI = timein.tv_usec - shuju[i].time;
 		shuju_d[i].label=1;
-		if (shuju[i].name != '-1')
+		if (strcmp(shuju[i].name,-1) != 0)
 		{
 			i++;
 			shuju[i] = recv_msg(msg);
