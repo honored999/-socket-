@@ -14,7 +14,7 @@ typedef struct
 	int label;/*标记是否已被发送*/
 }Loca_d;
 
-static struct itimerval oldtv;/*无意义*/
+static struct itimerval oldtv;
 
 sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* msg);/*声明算法*/
 
@@ -50,7 +50,7 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* 
 	{
 		gettimeofday(&timein, NULL);
 		shuju[i] = recv_msg(msg);
-		shuju_d[i].data = shuju[j];
+		shuju_d[i].data = shuju[i];
 		shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
 		shuju_d[i].label=1;
 		if (strcmp(shuju[i].name,"-1") != 0)
@@ -58,7 +58,7 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* 
 			i++;
 			gettimeofday(&timein, NULL);
 			shuju[i] = recv_msg(msg);
-			shuju_d[i].data = shuju[j];
+			shuju_d[i].data = shuju[i];
 			shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
 			shuju_d[i].label=1;
 		}
