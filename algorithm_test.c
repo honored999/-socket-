@@ -16,7 +16,7 @@ typedef struct
 
 static struct itimerval oldtv;/*无意义*/
 
-sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i);/*声明算法*/
+sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* msg);/*声明算法*/
 
 void set_timer()
 {
@@ -36,12 +36,12 @@ int main()
 	Loca_d shuju_d[10000];
 	int i = 0;
 	IpInfo* msg = connect_msg(ip,port);/*创立连接*/
-    signal(SIGALRM, algorithm(shuju,sd_msg,shuju_d,i));/*定时器每发出一次信号，运行一次algorithm*/
+    signal(SIGALRM, algorithm(shuju,sd_msg,shuju_d,i,msg));/*定时器每发出一次信号，运行一次algorithm*/
 	set_timer();
 	return 0;
 }
 
-sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i)
+sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* msg)
 {
 	struct timeval timein;
 	Loca mid,test;
