@@ -4,6 +4,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/socket.h>
 
 typedef struct location
 {
@@ -11,6 +16,23 @@ typedef struct location
    char location[20];
    char name[3];
 }Loca;
+
+void setnonblock(int lfd)
+{
+    int flags = fcntl( lfd, F_GETFL, 0);
+    fcntl( lfd, F_SETFL, flags | O_NONBLOCK);
+    if( flags < 0 )
+    {  
+	perror( "F_GETFL failed");
+	exit(1);
+    }
+    if( fcntl( lfd, F_SETFL, flags | O_NONBLOCK) < 0 )
+    {
+	perror( "F_SETFL failed");
+	exit(1);
+    }
+}
+
 int main()
 {
     // 1. 创建通信的套接字
@@ -20,7 +42,7 @@ int main()
         perror("socket");
         exit(0);
     }
-
+    
     // 2. 连接服务器
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
@@ -33,6 +55,7 @@ int main()
         perror("connect");
         exit(0);
     }
+    setnonblock(fd);
     Loca data;
     memcpy(data.time, "10", sizeof("10"));
     memcpy(data.location, "100.36, 66.7", sizeof("100.36, 66.7"));
@@ -52,16 +75,16 @@ int main()
             memcpy(&recvdata, recvbuffer, sizeof(Loca));
             printf("time:%s location:%s name:%s\n", recvdata.time, recvdata.location, recvdata.name);
         }
-        /*else if(len  == 0)
+        else if(len  == 0)
         {
             printf("服务器断开了连接...\n");
-            break;
+            /*continue;*/
         }
         else
         {
             perror("read");
-            break;
-        }*/
+            /*continue;*/
+        }
         sleep(1);   // 每隔1s发送一条数据
     }
 
