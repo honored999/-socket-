@@ -67,7 +67,7 @@ int main()
 
 sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* msg)
 {
- 	sigset_t sigset;
+
 	sigemptyset(&sigset);
 	sigaddset(&sigset,SIGALRM);
 	sigprocmask(SIG_BLOCK,&sigset,NULL);/*信号屏蔽*/
@@ -133,6 +133,6 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* 
 		}
 	}
 	
-	
+
 	sigprocmask(SIG_UNBLOCK,&sigset,NULL);/*信号解除屏蔽*/
 }
