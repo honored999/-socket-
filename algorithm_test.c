@@ -11,16 +11,22 @@ typedef struct
 }Loca_d;
 
 static struct itimerval oldtv;/*无意义*/
+static Loca shuju[100];
+static Loca sd_msg[100];
+static Loca_d shuju_d[100];
+static int i = 0;
+static IpInfo* msg ;
 
-sighandler_t  algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* msg);/*声明算法*/
+
+void  algorithm(int signum);/*声明算法*/
 
 void set_timer()
 {
 	struct itimerval itv;
-	itv.it_interval.tv_sec = 10;
-	itv.it_interval.tv_usec = 1000000;/*100000us后计时器运行*/
-	itv.it_value.tv_sec = 0;
-	itv.it_value.tv_usec = 1000000;/*计时器每隔100000us发出一次信号*/
+	itv.it_interval.tv_sec = 1;
+	itv.it_interval.tv_usec = 0;/*100000us后计时器运行*/
+	itv.it_value.tv_sec = 1;
+	itv.it_value.tv_usec = 0;/*计时器每隔100000us发出一次信号*/
 	setitimer(ITIMER_REAL, &itv, &oldtv);
 }
 
@@ -40,37 +46,25 @@ int main()
 	char ip[40];
 	int port = 39728;
 	memcpy(ip,"192.168.42.129",sizeof("192.168.42.129"));
-	
-	Loca shuju[100];
-	Loca sd_msg[100];
-	Loca_d shuju_d[100];
-	int i = 0;
-	IpInfo* msg ;/*创立连接*/
-    	signal(SIGALRM, algorithm(shuju,sd_msg,shuju_d,i,msg));/*定时器每发出一次信号，运行一次algorithm*/
-	set_timer();
-
-		
-	
+	msg=connect_msg(ip);
 	while(1)
 	{
-	if(msg == NULL)
-		msg = connect_msg(ip);
-		
-	algorithm(shuju,sd_msg,shuju_d,i,msg);
-	sleep(1);
-	
+	if(msg==NULL)
+		msg=connect_msg(ip);
+	else break;
 	}
+	sighandler_t sighandler=algorithm;
+    	signal(SIGALRM, sighandler);/*定时器每发出一次信号，运行一次algorithm*/
+	set_timer();
 
+	while(1){}
 	pthread_rwlock_destroy(&rwlock);
 	return 0;
 }
 
-sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* msg)
+void algorithm(int signum)
 {
 
-	sigemptyset(&sigset);
-	sigaddset(&sigset,SIGALRM);
-	sigprocmask(SIG_BLOCK,&sigset,NULL);/*信号屏蔽*/
 	
 	struct timeval timein;
 	Loca mid,test;
@@ -134,5 +128,5 @@ sighandler_t algorithm(Loca* shuju, Loca* sd_msg, Loca_d* shuju_d,int i,IpInfo* 
 	}
 	
 
-	sigprocmask(SIG_UNBLOCK,&sigset,NULL);/*信号解除屏蔽*/
+	
 }
