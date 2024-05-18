@@ -80,7 +80,7 @@ void algorithm(int signum)
 		shuju_d[i].data = shuju[i];
 		shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
 		shuju_d[i].label=1;
-		printf("time:%s location:%s name:%s\n", shuju[i].time, shuju[i].location, shuju[i].name);
+		
 		if (strcmp(shuju[i].name,"-1") != 0)
 		{
 			i++;
@@ -111,13 +111,14 @@ void algorithm(int signum)
 			}
 		}
 	}
+	
 
 	for (m = 0; m < i; m++)/*发送*/
 	{
 		if (shuju_d[m].label == 1)
 		{			
 			sd_msg[m] = shuju_d[m].data;
-			
+			printf("time:%s time_d:%ld location:%s name:%s\n", shuju[m].time, shuju_d[m].AoI, shuju[i].location, shuju[i].name);
 			pthread_rwlock_wrlock(&rwlock);
 			send_msg(msg, sd_msg[m]);
 			pthread_rwlock_unlock(&rwlock);
