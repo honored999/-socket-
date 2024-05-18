@@ -72,7 +72,7 @@ void algorithm(int signum)
 	while (1) /*接收数据直至为空*/
 	{
 		gettimeofday(&timein, NULL);
-		
+		printf("chuli: %ld\n",timein.tv_usec)
 		pthread_rwlock_wrlock(&rwlock);
 		shuju[i] = recv_msg(msg);
 		pthread_rwlock_unlock(&rwlock);
