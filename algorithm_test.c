@@ -93,6 +93,7 @@ void algorithm(int signum)
 			shuju_d[i].data = shuju[i];
 			shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
 			shuju_d[i].label=1;
+			i++;
 			
 		}
 		else
