@@ -24,9 +24,9 @@ void set_timer()
 {
 	struct itimerval itv;
 	itv.it_interval.tv_sec = 1;
-	itv.it_interval.tv_usec = 0;/*100000us后计时器运行*/
+	itv.it_interval.tv_usec = 0;/*1s后计时器运行*/
 	itv.it_value.tv_sec = 1;
-	itv.it_value.tv_usec = 0;/*计时器每隔100000us发出一次信号*/
+	itv.it_value.tv_usec = 0;/*s发出一次信号*/
 	setitimer(ITIMER_REAL, &itv, &oldtv);
 }
 
@@ -91,7 +91,7 @@ void algorithm(int signum)
 			pthread_rwlock_unlock(&rwlock);
 
 			shuju_d[i].data = shuju[i];
-			shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
+			shuju_d[i].AoI = 1000000*timein.tv.sec+timein.tv_usec - atol(shuju[i].time);
 			shuju_d[i].label=1;
 			i++;
 			
@@ -99,6 +99,12 @@ void algorithm(int signum)
 		else
 			break;
 	}
+	
+	for(k=0;k<i;k++) /*更新AoI*/
+		{
+			gettimeofday(&timein,NULL);
+			shuju_d[i].AoI=1000000*timein.tv.sec+timein.tv.usec-atol(shuju[i].time);
+		}
 
 	for (j = 0; j < i; j++) /*排序*/
 	{
