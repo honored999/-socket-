@@ -78,7 +78,7 @@ void algorithm(int signum)
 		pthread_rwlock_unlock(&rwlock);
 		
 		shuju_d[i].data = shuju[i];
-		shuju_d[i].AoI = timein.tv_usec - atol(shuju[i].time);
+		shuju_d[i].AoI =1000000*timein.tv_sec+ timein.tv_usec - atol(shuju[i].time);
 		shuju_d[i].label=1;
 		
 		if (strcmp(shuju[i].name,"-1") != 0)
@@ -91,7 +91,7 @@ void algorithm(int signum)
 			pthread_rwlock_unlock(&rwlock);
 
 			shuju_d[i].data = shuju[i];
-			shuju_d[i].AoI = 1000000*timein.tv.sec+timein.tv_usec - atol(shuju[i].time);
+			shuju_d[i].AoI = 1000000*timein.tv_sec+timein.tv_usec - atol(shuju[i].time);
 			shuju_d[i].label=1;
 			i++;
 			
@@ -103,7 +103,7 @@ void algorithm(int signum)
 	for(k=0;k<i;k++) /*更新AoI*/
 		{
 			gettimeofday(&timein,NULL);
-			shuju_d[i].AoI=1000000*timein.tv.sec+timein.tv.usec-atol(shuju[i].time);
+			shuju_d[i].AoI=1000000*timein.tv_sec+timein.tv_usec-atol(shuju[i].time);
 		}
 
 	for (j = 0; j < i; j++) /*排序*/
