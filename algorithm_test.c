@@ -100,15 +100,15 @@ void algorithm(int signum)
 			break;
 	}
 	
-	for(k=0;k<i;k++) /*更新AoI*/
+	for(k=0;k<i+1;k++) /*更新AoI*/
 		{
 			gettimeofday(&timein,NULL);
 			shuju_d[i].AoI=1000000*timein.tv_sec+timein.tv_usec-atol(shuju_d[i].data.time);
 		}
 
-	for (j = 0; j < i; j++) /*排序*/
+	for (j = 0; j < i+1; j++) /*排序*/
 	{
-		for (k = j + 1; k < i; k++)
+		for (k = j + 1; k < i+1; k++)
 		{
 			if (shuju_d[k].AoI < shuju_d[j].AoI)
 			{
@@ -126,7 +126,7 @@ void algorithm(int signum)
 	}
 	
 
-	for (m = 0; m < i; m++)/*发送*/
+	for (m = 0; m < i+1; m++)/*发送*/
 	{
 		if (shuju_d[m].label == 1 /*&& strcmp(shuju_d[i].data.time,"-1") != 0*/)
 		{			
