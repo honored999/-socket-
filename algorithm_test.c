@@ -44,7 +44,6 @@ int main()
 	pthread_detach(tid);
 	
 	char ip[40];
-	int port = 39728;
 	memcpy(ip,"192.168.42.129",sizeof("192.168.42.129"));
 	msg=connect_msg(ip);
 	while(1)
@@ -67,7 +66,7 @@ void algorithm(int signum)
 
 	
 	struct timeval timein;
-	Loca mid,test;
+	Loca mid;
 	int j, k, m = 0;
 	long int p=0;
 	int x=0;
