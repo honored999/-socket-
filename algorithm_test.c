@@ -128,7 +128,7 @@ void algorithm(int signum)
 
 	for (m = 0; m < i; m++)/*发送*/
 	{
-		if (shuju_d[m].label == 1 && strcmp(shuju_d[i].data.time,"-1") != 0)
+		if (shuju_d[m].label == 1 /*&& strcmp(shuju_d[i].data.time,"-1") != 0*/)
 		{			
 			sd_msg[m] = shuju_d[m].data;
 			printf("time:%s time_d:%ld location:%s name:%s\n", shuju_d[m].data.time, shuju_d[m].AoI, shuju_d[i].data.location, shuju_d[i].data.name);
