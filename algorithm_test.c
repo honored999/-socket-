@@ -69,6 +69,8 @@ void algorithm(int signum)
 	struct timeval timein;
 	Loca mid,test;
 	int j, k, m = 0;
+	long int p=0;
+	int x=0;
 	while (1) /*接收数据直至为空*/
 	{
 		gettimeofday(&timein, NULL);
@@ -78,10 +80,10 @@ void algorithm(int signum)
 		pthread_rwlock_unlock(&rwlock);
 		
 		shuju_d[i].data = shuju[i];
-		shuju_d[i].AoI =1000000*timein.tv_sec+ timein.tv_usec - atol(shuju[i].time);
+		shuju_d[i].AoI =1000000*timein.tv_sec+ timein.tv_usec - atol(shuju_d[i].data.time);
 		shuju_d[i].label=1;
 		
-		if (strcmp(shuju[i].time,"-1") != 0)
+		if (strcmp(shuju_d[i].data.time,"-1") != 0)
 		{
 			i++;
 			gettimeofday(&timein, NULL);
@@ -91,7 +93,7 @@ void algorithm(int signum)
 			pthread_rwlock_unlock(&rwlock);
 
 			shuju_d[i].data = shuju[i];
-			shuju_d[i].AoI = 1000000*timein.tv_sec+timein.tv_usec - atol(shuju[i].time);
+			shuju_d[i].AoI = 1000000*timein.tv_sec+timein.tv_usec - atol(shuju_d[i].data.time);
 			shuju_d[i].label=1;
 			i++;
 			
@@ -103,7 +105,7 @@ void algorithm(int signum)
 	for(k=0;k<i;k++) /*更新AoI*/
 		{
 			gettimeofday(&timein,NULL);
-			shuju_d[i].AoI=1000000*timein.tv_sec+timein.tv_usec-atol(shuju[i].time);
+			shuju_d[i].AoI=1000000*timein.tv_sec+timein.tv_usec-atol(shuju_d[i].data.time);
 		}
 
 	for (j = 0; j < i; j++) /*排序*/
@@ -115,6 +117,12 @@ void algorithm(int signum)
 				mid = shuju_d[j].data;
 				shuju_d[j].data = shuju_d[k].data;
 				shuju_d[k].data = mid;
+				p=shuju_d[j].AoI;
+				shuju_d[j].AoI=shuju_d[k].AoI;
+				shuju_d[k].AoI=p;
+				x=shuju_d[j].label;
+				shuju_d[j].label=shuju_d[k].label;
+				shuju_d[k].label=x;
 			}
 		}
 	}
@@ -122,10 +130,10 @@ void algorithm(int signum)
 
 	for (m = 0; m < i; m++)/*发送*/
 	{
-		if (shuju_d[m].label == 1 && strcmp(shuju[i].time,"-1") != 0)
+		if (shuju_d[m].label == 1 && strcmp(shuju_d[i].data.time,"-1") != 0)
 		{			
 			sd_msg[m] = shuju_d[m].data;
-			printf("time:%s time_d:%ld location:%s name:%s\n", shuju[m].time, shuju_d[m].AoI, shuju[i].location, shuju[i].name);
+			printf("time:%s time_d:%ld location:%s name:%s\n", shuju_d[m].data.time, shuju_d[m].AoI, shuju_d[i].data.location, shuju_d[i].data.name);
 			pthread_rwlock_wrlock(&rwlock);
 			send_msg(msg, sd_msg[m]);
 			pthread_rwlock_unlock(&rwlock);
