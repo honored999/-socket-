@@ -81,7 +81,7 @@ void algorithm(int signum)
 		shuju_d[i].AoI =1000000*timein.tv_sec+ timein.tv_usec - atol(shuju[i].time);
 		shuju_d[i].label=1;
 		
-		if (strcmp(shuju[i].name,"-1") != 0)
+		if (strcmp(shuju[i].time,"-1") != 0)
 		{
 			i++;
 			gettimeofday(&timein, NULL);
@@ -122,7 +122,7 @@ void algorithm(int signum)
 
 	for (m = 0; m < i; m++)/*发送*/
 	{
-		if (shuju_d[m].label == 1)
+		if (shuju_d[m].label == 1 && strcmp(shuju[i].time,"-1") != 0)
 		{			
 			sd_msg[m] = shuju_d[m].data;
 			printf("time:%s time_d:%ld location:%s name:%s\n", shuju[m].time, shuju_d[m].AoI, shuju[i].location, shuju[i].name);
