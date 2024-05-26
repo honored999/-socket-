@@ -23,9 +23,9 @@ void  algorithm(int signum);/*声明算法*/
 void set_timer()
 {
 	struct itimerval itv;
-	itv.it_interval.tv_sec = 1;
+	itv.it_interval.tv_sec = 3;
 	itv.it_interval.tv_usec = 0;/*1s后计时器运行*/
-	itv.it_value.tv_sec = 1;
+	itv.it_value.tv_sec = 3;
 	itv.it_value.tv_usec = 0;/*s发出一次信号*/
 	setitimer(ITIMER_REAL, &itv, &oldtv);
 }
@@ -103,7 +103,7 @@ void algorithm(int signum)
 	for(k=0;k<i+1;k++) /*更新AoI*/
 		{
 			gettimeofday(&timein,NULL);
-			shuju_d[i].AoI=1000000*timein.tv_sec+timein.tv_usec-atol(shuju_d[i].data.time);
+			shuju_d[k].AoI=1000000*timein.tv_sec+timein.tv_usec-atol(shuju_d[k].data.time);
 		}
 
 	for (j = 0; j < i+1; j++) /*排序*/
