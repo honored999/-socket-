@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#include <bits/pthreadtypes.h>
 
 typedef struct location
 {
@@ -36,6 +37,12 @@ typedef struct list
   IpInfo* iplist;
 }List;
 
+typedef struct desip
+{
+   char ip[24];
+   int flag;
+}Desip;
+
 IpInfo* iplist ;//创建全局变量
 
 Loca** lolist ;//创建全局变量
@@ -44,19 +51,22 @@ Loca false_msg;
 
 pthread_rwlock_t rwlock;//创建读写锁
 
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+
 IpInfo* connect_msg(char *ip);//更新客户端列表
 
 void send_msg(IpInfo *ip, Loca data);//向客户端发送数据
 
-Loca recv_msg(IpInfo* ip);//获取指定客户端的最新数据
+Loca recv_msg(IpInfo* ip, int time);//获取指定客户端的最新数据
 
 /*void run_msg();*/
 
 void* working(void* arg);// 运行单线程的子线程
 
-Loca** create_lolist();
+int correctmsg(char *ip, int port, int fd);//主机与中间件建立联系
 
-IpInfo* create_iplist();
+void get_abstime_wait(int microseconds, struct timespec *abstime);
 
 //void create_list(Loca** lolist, IpInfo* iplist);
 
@@ -78,11 +88,7 @@ IpInfo* create_iplist()
   return arr;
 }
 
-List create_list(Loca** lolist, IpInfo* iplist, List list)
-{
-  list.lolist = lolist;
-  list.iplist = iplist;
-}
+
 
 void setnonblock(int lfd)
 {
@@ -160,9 +166,9 @@ void* working(void* arg)
     FD_ZERO(&readfds_bak);
     FD_SET(lfd, &readfds_bak);
     // 4. 循环接受客户端连接
-    int cfd;
+    
     struct sockaddr_in cliaddr;
-    int clilen = sizeof(struct sockaddr_in);
+    unsigned int clilen = sizeof(struct sockaddr_in);
     ret=0;
     char ip[24] = {0};
     int n = 0;
@@ -177,7 +183,7 @@ void* working(void* arg)
 
 	//select函数设置
   	ret = select( maxfd+1, &readfds, NULL, NULL, &timeout);
-  	printf("%d\n",ret);
+  	
   	
 	if( ret==-1)
 	{
@@ -186,7 +192,7 @@ void* working(void* arg)
  	}
 	else if( ret == 0)
 	{
-	   printf("在%ld秒内无套接字接受信息\n", timeout.tv_sec);
+	   /*printf("在%ld秒内无套接字接受信息\n", timeout.tv_sec);*/
 	   continue;
 	}
 
@@ -242,9 +248,9 @@ void* working(void* arg)
 	   }
 	   else
 	   {
-		printf("接受数据\n");
+		
 		pthread_rwlock_rdlock(&rwlock);
-		for(num=0 ; num <= sizeof(iplist)/sizeof(iplist[0]); ++num)
+		for(num=0 ; num <= sizeof(*iplist)/sizeof(iplist[0]); ++num)
 		{
 		  if(i == iplist[num].fd && iplist[num].real == 1)
 		  {
@@ -267,6 +273,9 @@ void* working(void* arg)
 		  lolist[iplist[num].id]=(Loca*)realloc(lolist[iplist[num].id], (iplist[num].nid+1)*sizeof(Loca));
 		  ++(iplist[num].maxid);
 		}
+		pthread_mutex_lock(&mtx);
+		pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&mtx);
 		pthread_rwlock_unlock(&rwlock);
 		
         	if(len == -1)
@@ -333,24 +342,32 @@ IpInfo* connect_msg(char *ip)
   return NULL;
 }
 
-Loca recv_msg(IpInfo* ip)
+Loca recv_msg(IpInfo* ip, int time)
 {
   /*int i = ip->nid;*/
-  /*pthread_rwlock_wrlock(&rwlock);*/
+  struct timespec abstime;
+  get_abstime_wait(time, &abstime);
+  pthread_mutex_lock(&mtx);
+  pthread_cond_timedwait(&cond, &mtx, &abstime);
+  pthread_rwlock_wrlock(&rwlock);
 	if(ip == NULL)
 	{
+		pthread_rwlock_unlock(&rwlock);
+		pthread_mutex_unlock(&mtx);
 		return false_msg;
 	}
   else if(ip->nid >=1)
   {
   	--(ip->nid);
   	Loca data = lolist[ip->id][ip->nid];
-  	/*pthread_rwlock_unlock(&rwlock);*/
+  	pthread_rwlock_unlock(&rwlock);
+	pthread_mutex_unlock(&mtx);
   	return data; 
   }
   else
   {	
-  	/*pthread_rwlock_unlock(&rwlock);*/
+  	pthread_rwlock_unlock(&rwlock);
+	pthread_mutex_unlock(&mtx);
   	return false_msg;
   }	
 }
@@ -375,3 +392,26 @@ void send_msg(IpInfo *ip, Loca data)
   /*pthread_rwlock_unlock(&rwlock);*/
   return;
 }
+
+int correctmsg(char *ip, int port, int fd)
+{
+	struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);   // 大端端口
+    inet_pton(AF_INET, ip, &addr.sin_addr.s_addr);
+
+    int ret=connect(fd, (struct sockaddr*)&addr, sizeof(addr));
+	return ret;
+}
+
+void get_abstime_wait(int microseconds, struct timespec *abstime)
+ {
+    struct timeval tv;
+    long long absmsec;
+    gettimeofday(&tv, NULL);
+    absmsec = tv.tv_sec * 1000ll + tv.tv_usec / 1000ll;
+    absmsec += microseconds;
+  
+    abstime->tv_sec = absmsec / 1000ll;
+   abstime->tv_nsec = absmsec % 1000ll * 1000000ll;
+ }
